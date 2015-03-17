@@ -3,7 +3,7 @@
  * Plugin Name: Knowledgebase
  * Plugin URI: http://github.com/ejoweb
  * Description: Knowledgebase. By EJOweb.
- * Version: 0.0.1
+ * Version: 0.0.2
  * Author: Erik Joling
  * Author URI: http://www.erikjoling.nl/
  *

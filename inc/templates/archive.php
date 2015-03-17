@@ -58,7 +58,6 @@ function ejo_knowledgebase_archive_loop()
 
 	echo '</div>';
 
-	// eoo_kb_search();
 }
 
 genesis();
