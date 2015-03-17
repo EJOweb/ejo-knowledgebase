@@ -1,0 +1,157 @@
+/*
+Kennisbank
+---------------------------------------------------------------------------------------------------- */
+
+/* Overzicht
+--------------------------------------------- */
+.knowledgebase-category-block {
+	float:left;
+	margin-bottom: 30px;
+	width: 49%;
+}
+
+.knowledgebase-category-block:nth-child(odd) {
+	clear: left;
+	margin-right: 2%;
+}
+
+.knowledgebase-category-block:first-child {
+	clear: none;
+}
+
+@media (max-width: 600px) {
+	.knowledgebase-category-block {
+		width: 100% !important;
+		clear: none !important;
+		margin-right: 0 !important;
+	}
+}
+
+.knowledgebase-category-block {
+	display: table;
+}
+
+.knowledgebase-category-block h2 {
+	display: table-row;
+}
+
+.knowledgebase-category-block h2 i.fa {
+	display: table-cell;
+	text-align: center;
+}
+
+.knowledgebase-category-block h2 a {
+	display: table-cell;
+	padding-left: 18px;
+	padding-bottom: 10px;
+}
+
+.knowledgebase-category-block .knowledgebase-article {
+	display: table-row;
+}
+
+.knowledgebase-category-block .knowledgebase-article i.fa {
+	display: table-cell;
+	vertical-align: top;
+	line-height: inherit;
+	text-align: center;
+}
+
+.knowledgebase-category-block .knowledgebase-article a {
+	display: table-cell;
+	width: 100%;
+	padding-left: 20px;
+	padding-bottom: 5px;
+}
+
+.knowledgebase-category-block .knowledgebase-article a:hover {
+	text-decoration: underline;
+}
+
+
+
+/* Knowledgebase Category
+--------------------------------------------- */
+.knowledgebase-category {
+	margin-top: 30px;
+}
+
+.knowledgebase-category .knowledgebase-article {
+	margin-bottom: 20px;
+}
+
+.knowledgebase-category .knowledgebase-article header {
+	display: table;
+}
+
+.knowledgebase-category .knowledgebase-article h2 {
+	display: table-row;
+	font-size: 1.2rem;
+}
+
+.knowledgebase-category .knowledgebase-article i.fa {
+	display: table-cell;
+	/*vertical-align: top;*/
+	line-height: inherit;
+	text-align: center;
+}
+
+.knowledgebase-category .knowledgebase-article a {
+	display: table-cell;
+	width: 100%;
+	padding-left: 20px;
+	padding-bottom: 5px;
+}
+
+.knowledgebase-category .knowledgebase-article h2 a:hover {
+	text-decoration: underline;
+}
+
+/* Knowledgebase Article
+--------------------------------------------- */
+.knowledgebase + .ssba {
+	margin-top: 20px;
+}
+
+
+/* Knowledgebase footer
+--------------------------------------------- */
+.knowledgebase-footer {
+	font-size: 90%;
+	margin-top: 30px;
+	margin-bottom: 20px;
+	border-top: 1px solid #ddd;
+	padding: 5px 0;
+}
+
+/* Search
+--------------------------------------------- */
+.knowledgebase-search {
+	clear: both;
+	margin-top: 30px;
+	position: relative;
+	display: table;
+	border-collapse: separate;
+}
+
+.knowledgebase-search input[type="text"] {
+	display: table-cell;
+	width: 100%;
+	padding: 10px 10px;
+}
+
+.knowledgebase-search span {
+	position: relative;
+	width: 1%;
+	white-space: nowrap;
+	display: table-cell;
+}
+
+.knowledgebase-search input[type="submit"] {
+	display: inline-block;
+	margin-left: 8px;
+	position: relative;
+	text-align: center;
+	white-space: nowrap;
+	padding: 10px 30px;
+}
