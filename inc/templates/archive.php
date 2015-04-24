@@ -2,9 +2,12 @@
 
 remove_action( 'genesis_loop', 'genesis_do_loop' );
 add_action( 'genesis_loop', 'ejo_knowledgebase_archive_loop' );
-add_action( 'genesis_after_loop', 'ejo_knowledgebase_search' );
 
-add_filter( 'genesis_pre_get_option_site_layout', '__genesis_return_full_width_content' );  
+remove_action( 'genesis_sidebar', 'genesis_do_sidebar' );
+add_action( 'genesis_sidebar', 'ejo_knowledgebase_sidebar' );
+// add_action( 'genesis_before_loop', 'ejo_knowledgebase_search' );
+
+// add_filter( 'genesis_pre_get_option_site_layout', '__genesis_return_full_width_content' );  
 
 /* Load overviewloop */
 function ejo_knowledgebase_archive_loop()
@@ -17,6 +20,8 @@ function ejo_knowledgebase_archive_loop()
 		echo apply_filters('the_content',$kb_page->post_content);
 
 	}
+
+	ejo_knowledgebase_search();
 
 	//* Get knowledgebase categories
 	$category_args = array(

@@ -42,7 +42,7 @@ Kennisbank
 
 .knowledgebase-category-block h2 a {
 	display: table-cell;
-	padding-left: 18px;
+	padding-left: 13px;
 	padding-bottom: 10px;
 }
 
@@ -60,7 +60,7 @@ Kennisbank
 .knowledgebase-category-block .knowledgebase-article a {
 	display: table-cell;
 	width: 100%;
-	padding-left: 20px;
+	padding-left: 15px;
 	padding-bottom: 5px;
 }
 
@@ -99,7 +99,7 @@ Kennisbank
 .knowledgebase-category .knowledgebase-article a {
 	display: table-cell;
 	width: 100%;
-	padding-left: 20px;
+	padding-left: 15px;
 	padding-bottom: 5px;
 }
 
@@ -128,10 +128,13 @@ Kennisbank
 --------------------------------------------- */
 .knowledgebase-search {
 	clear: both;
-	margin-top: 30px;
-	position: relative;
-	display: table;
+	margin-bottom: 20px;
+	position: relative;	
+}
+
+.knowledgebase-search form {
 	border-collapse: separate;
+	display: table;
 }
 
 .knowledgebase-search input[type="text"] {
@@ -154,4 +157,29 @@ Kennisbank
 	text-align: center;
 	white-space: nowrap;
 	padding: 10px 30px;
+}
+
+/* Widget
+--------------------------------------------- */
+.ejo-knowledgebase-widget {
+
+}
+
+.ejo-knowledgebase-widget .knowledgebase-items {
+	display: table;
+	border-collapse: separate;
+}
+
+.ejo-knowledgebase-widget i.fa {
+	display: table-cell;
+	/*vertical-align: top;*/
+	line-height: inherit;
+	text-align: center;
+}
+
+.ejo-knowledgebase-widget a {
+	display: table-cell;
+	width: 100%;
+	padding-left: 10px;
+	padding-bottom: 5px;
 }

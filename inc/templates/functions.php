@@ -31,6 +31,15 @@ function ejo_knowledgebase_result_loop($query_args = array())
 	endif; //* end loop
 }
 
+//* Knowledgebase sidebar
+function ejo_knowledgebase_sidebar()
+{
+	genesis_widget_area( 'knowledgebase-sidebar', array(
+		'before' => '',
+		'after' => '',
+	) );
+}
+
 function ejo_knowledgebase_add_meta()
 {	
 	$knowledgebase_link = ejo_get_knowledgebase_link();
@@ -88,12 +97,12 @@ function ejo_get_knowledgebase_article_categories()
 function ejo_knowledgebase_search() 
 {
 ?>
-	<form role="search" method="get" action="<?php echo site_url('/'); ?>" >
-		<div class="knowledgebase-search">
+	<div class="knowledgebase-search">
+		<form role="search" method="get" action="<?php echo site_url('/'); ?>" >
 			<input type="text" value="<?php if (is_search()) { echo get_search_query(); } ?>" name="s" placeholder="Doorzoek Kennisbank" />
 			<span><input type="submit" class="button" value="Zoeken" /></span>
 			<input type="hidden" name="post_type" value="knowledgebase" />
-		</div>
-	</form>
+		</form>
+	</div>
 <?php
 }

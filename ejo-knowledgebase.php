@@ -3,7 +3,7 @@
  * Plugin Name: Knowledgebase
  * Plugin URI: http://github.com/ejoweb
  * Description: Knowledgebase. By EJOweb.
- * Version: 0.0.2
+ * Version: 0.2
  * Author: Erik Joling
  * Author URI: http://www.erikjoling.nl/
  *
@@ -21,6 +21,9 @@ class EJO_Knowledgebase
 	//* Stores the version of this plugin.
 	public static $version;
 
+	//* Stores the id of this plugin.
+	public static $id = 'ejo-knowledgebase';
+
 	//* Stores the directory path for this plugin.
 	public static $dir;
 
@@ -30,8 +33,12 @@ class EJO_Knowledgebase
 	//* Plugin setup.
 	private function __construct() {
 
+
 		//* Set the properties needed by the plugin.
-		add_action( 'plugins_loaded', array( $this, 'setup' ) );
+		self::setup();
+
+		// Include required files
+        self::includes();
 
 		//* Register Knowledgebase post type
 		add_action( 'init', array( $this, 'register_post_type_knowledgebase' ) );
@@ -44,13 +51,6 @@ class EJO_Knowledgebase
 
 		//* Register Knowledgebase widget
 		add_action( 'widgets_init', array( $this, 'register_knowledgebase_widget' ) );
-
-		// Force page to be password protected
-		// add_action('post_submitbox_misc_actions', array( $this, 'admin_knowledge_article_visibility_password' ) );
-
-		//* Remove protected prefix from title
-		// add_action('init', array($this, 'main'));
-
 	}
 
 	//* Defines the directory path and URI for the plugin.
@@ -63,6 +63,12 @@ class EJO_Knowledgebase
 		//* Set version based on metadata at top of this file
 		$plugin_data = get_file_data( __FILE__, array('Version' => 'Version') );
 		self::$version = $plugin_data['Version'];
+	}
+
+	//* Includes
+    private static function includes() 
+    {
+		include_once( self::$dir . 'inc/class-widget.php' );
 	}
 
 	//*
@@ -117,7 +123,7 @@ class EJO_Knowledgebase
 	//*
 	public function register_knowledgebase_widget()
 	{
-
+		register_widget( 'EJO_Knowledgebase_Widget' ); 
 	}
 
 	public function admin_knowledge_article_visibility_password()
@@ -153,11 +159,7 @@ class EJO_Knowledgebase
 	//* Multiple functionalities
 	public function main()
 	{
-		add_filter( 'protected_title_format', 'yourprefix_private_title_format' );
 
-		function yourprefix_private_title_format( $format ) {
-			return '%s';
-		}
 	}
 
 
