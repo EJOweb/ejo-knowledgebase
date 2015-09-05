@@ -1,11 +1,13 @@
 <?php
 /**
- * Plugin Name: Knowledgebase
- * Plugin URI: http://github.com/ejoweb
+ * Plugin Name: EJO Knowledgebase
+ * Plugin URI: http://github.com/ejoweb/ejo-knowledgebase
  * Description: Knowledgebase. By EJOweb.
  * Version: 0.2
  * Author: Erik Joling
- * Author URI: http://www.erikjoling.nl/
+ * Author URI: http://www.ejoweb.nl/
+ *
+ * GitHub Plugin URI: https://github.com/ejoweb/ejo-knowledgebase
  *
  * Minimum PHP version: 5.3.0
  *
