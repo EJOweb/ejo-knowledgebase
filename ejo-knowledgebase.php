@@ -1,24 +1,20 @@
 <?php
 /**
- * Plugin Name: EJO Knowledgebase
- * Plugin URI: http://github.com/ejoweb/ejo-knowledgebase
- * Description: Knowledgebase. By EJOweb.
- * Version: 0.2
- * Author: Erik Joling
- * Author URI: http://www.ejoweb.nl/
+ * Plugin Name: 		EJO Knowledgebase
+ * Plugin URI: 			http://github.com/ejoweb/ejo-knowledgebase
+ * Description: 		Knowledgebase. By EJOweb.
+ * Version: 			0.3
+ * Author: 				Erik Joling
+ * Author URI: 			http://www.ejoweb.nl/
  *
- * GitHub Plugin URI: https://github.com/ejoweb/ejo-knowledgebase
- *
- * Minimum PHP version: 5.3.0
- *
- * @package   Knowledgebase
- * @since     0.0.1
+ * GitHub Plugin URI: 	https://github.com/ejoweb/ejo-knowledgebase
+ * GitHub Branch: 		overhaul
  */
 
-class EJO_Knowledgebase 
+final class EJO_Knowledgebase 
 {
 	//* Holds the instance of this class.
-	private static $instance;
+	protected static $_instance = null;
 
 	//* Stores the version of this plugin.
 	public static $version;
@@ -26,16 +22,26 @@ class EJO_Knowledgebase
 	//* Stores the id of this plugin.
 	public static $id = 'ejo-knowledgebase';
 
+	//* Stores the name of the post-type
+	public static $post_type = 'knowledgebase';
+
 	//* Stores the directory path for this plugin.
 	public static $dir;
 
 	//* Stores the directory URI for this plugin.
 	public static $uri;
 
+    //* Returns the instance.
+    public static function instance() 
+    {
+        if ( !self::$_instance )
+            self::$_instance = new self;
+        return self::$_instance;
+    }
+
 	//* Plugin setup.
-	private function __construct() {
-
-
+	private function __construct() 
+	{
 		//* Set the properties needed by the plugin.
 		self::setup();
 
@@ -43,13 +49,11 @@ class EJO_Knowledgebase
         self::includes();
 
 		//* Register Knowledgebase post type
-		add_action( 'init', array( $this, 'register_post_type_knowledgebase' ) );
+		add_action( 'init', array( $this, 'register_knowledgebase_post_type' ) );
 
-		//* Load templates for knowledgebase
-		add_action( 'template_redirect', array( $this, 'load_knowledgebase_templates' ) );
-
-		//* Load stylesheet
-		add_action( 'wp_enqueue_scripts', array( $this, 'load_stylesheet' ) );
+		//* Register Columns
+		add_filter( 'manage_'.self::$post_type.'_posts_columns', array( $this, 'manage_columns' ) );
+		add_action( 'manage_'.self::$post_type.'_posts_custom_column', array( $this, 'manage_columns_output' ), 10, 2 );
 
 		//* Register Knowledgebase widget
 		add_action( 'widgets_init', array( $this, 'register_knowledgebase_widget' ) );
@@ -70,56 +74,109 @@ class EJO_Knowledgebase
 	//* Includes
     private static function includes() 
     {
+		include_once( self::$dir . 'inc/helpers.php' );
 		include_once( self::$dir . 'inc/class-widget.php' );
 	}
 
 	//*
-	public function register_post_type_knowledgebase()
+	public function register_knowledgebase_post_type()
 	{
-		require_once( self::$dir . 'inc/register-post-type.php' );
+		register_post_type( self::$post_type, array(
+			'description'           => 'Kennisbank',
+			'labels'                => array(
+				'name'                  => 'Kennisbank',
+				'singular_name'         => 'Artikel',
+				'add_new'               => 'Nieuw artikel',  
+				'add_new_item'          => 'Nieuw artikel toevoegen',  
+				'edit_item'             => 'Wijzig artikel',  
+				'new_item'              => 'Nieuw artikel',  
+				'view_item'             => 'Bekijk artikel',  
+				'search_items'          => 'Zoek artikelen',  
+				'not_found'             => 'Geen artikel gevonden',  
+				'not_found_in_trash'    => 'Geen artikel gevonden in Prullenbank',
+				'all_items'             => 'Alle artikelen',
+			),
+			'public'                => true,
+			'menu_position'         => 24,
+			'rewrite'               => array(
+				'slug'       => 'kennisbank',
+				'with_front' => false,
+			),
+			'supports'              => array('title','editor','author'),
+			'public'                => true,
+			'show_ui'               => true,
+			'publicly_queryable'    => true,
+			'has_archive'           => true,
+			'exclude_from_search'   => false
+		));
+
+		register_taxonomy( 'knowledgebase_category',array( 'knowledgebase' ),array( 
+			'hierarchical'  => false,
+			'labels'        => array(
+				'name'              =>  'Categorieën',
+				'singular_name'     =>  'Categorie',
+				'search_items'      =>  'Zoek categorieën',
+				'all_items'         =>  'Alle categorieën',
+				'parent_item'       =>  'Hoofd categorie',
+				'parent_item_colon' =>  'Hoofd categorie:',
+				'edit_item'         =>  'Wijzig categorie',
+				'update_item'       =>  'Update categorie',
+				'add_new_item'      =>  'Nieuwe categorie toevoegen',
+				'new_item_name'     =>  'Nieuwe categorie naam',
+				'popular_items'     => NULL,
+				'menu_name'         =>  'Categorieën' 
+			),
+			'show_ui'       => true,
+			'public'        => true,
+			'query_var'     => true,
+			'hierarchical'  => true,
+			'rewrite'       => array( 
+				'slug' => 'kennisbank-categorie',
+			)
+		));
 	}
 
-	//*
-	public function load_knowledgebase_templates()
-	{
-		//* include functions used by template files
-		include_once( self::$dir . 'inc/templates/functions.php');
 
-		//* Include template files where necessary
-		add_filter( 'template_include', array( $this, 'manage_knowledgebase_templates' ) );
+
+	//* 
+	public function manage_columns( $columns ) 
+	{
+		$columns = array_insert_after('title', $columns, 'categories', 'Categorieën' );
+				
+		return $columns;
 	}
 
-	//*
-	public function manage_knowledgebase_templates( $template )
+	public function manage_columns_output( $column, $post_id ) 
 	{
-		$new_template = '';
+		wp_die('test');
+		write_log('test');
+		if ( $column == 'categories' ) {
 
-		if ( is_search() && isset($_GET['post_type']) && $_GET['post_type']=='knowledgebase' ) {
-			$new_template = self::$dir . 'inc/templates/search.php';
+			/* Get the genres for the post. */
+			$terms = get_the_terms( $post_id, 'knowledgebase_category' );
+
+			// /* If terms were found. */
+			// if ( !empty( $terms ) ) {
+
+			// 	$out = array();
+
+			// 	/* Loop through each term, linking to the 'edit posts' page for the specific term. */
+			// 	foreach ( $terms as $term ) {
+			// 		$out[] = sprintf( '<a href="%s">%s</a>',
+			// 			esc_url( add_query_arg( array( 'post_type' => $post->post_type, 'knowledgebase_category' => $term->slug ), 'edit.php' ) ),
+			// 			esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, 'knowledgebase_category', 'display' ) )
+			// 		);
+			// 	}
+
+			// 	/* Join the terms, separating them with a comma. */
+			// 	echo join( ', ', $out );
+			// }
+
+			/* If no terms were found, output a default message. */
+			// else {
+				echo 'test';
+			// }
 		}
-
-		elseif ( is_post_type_archive('knowledgebase') ) {
-			$new_template = self::$dir . 'inc/templates/archive.php';
-		}
-
-		elseif ( is_tax( 'knowledgebase_category' ) ) {
-			$new_template = self::$dir . 'inc/templates/category.php';
-		}
-
-		elseif ( is_singular( 'knowledgebase' ) ) {
-			$new_template = self::$dir . 'inc/templates/single.php';
-		}
-
-		//* Load new template if it exists
-		$template = ( !empty($new_template) && file_exists($new_template) ) ? $new_template : $template;
-
-		return $template;
-	}
-
-	//* Load the stylesheet
-	public function load_stylesheet()
-	{
-		wp_enqueue_style( 'knowledgebase-style', self::$uri . 'css/style.css', array(), self::$version );
 	}
 
 	//*
@@ -128,57 +185,11 @@ class EJO_Knowledgebase
 		register_widget( 'EJO_Knowledgebase_Widget' ); 
 	}
 
-	public function admin_knowledge_article_visibility_password()
-	{
-		global $post;
-
-		// Only change password for preview videos		
-		if($post->post_type != 'knowledgebase')
-			return false;
-		?>
-
-		<script type="text/javascript">
-			(function($){
-				try {
-					// Set the default text
-					$('#post-visibility-display').text('Password Protected');
-
-					// Set hidden post visibility value
-					$('#hidden-post-visibility').val('password');
-
-					// Check the radio button
-					$('#visibility-radio-password').prop('checked', true);
-
-					// Open the visibility display
-					$('#post-visibility-select').show();
-				} catch(err){}
-			}) (jQuery);
-		</script>
-
-		<?php
-	}
-
 	//* Multiple functionalities
 	public function main()
 	{
 
 	}
-
-
-	//* Returns the instance.
-	public static function init() 
-	{
-		if ( !self::$instance )
-			self::$instance = new self;
-
-		return self::$instance;
-	}
-
-	//* Check if Fontawesome
-	public function fontawesome() 
-	{
-
-	}
 }
 
-EJO_Knowledgebase::init();
+EJO_Knowledgebase::instance();
