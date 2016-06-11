@@ -2,8 +2,8 @@
 /**
  * Plugin Name: 		EJO Knowledgebase
  * Plugin URI: 			http://github.com/ejoweb/ejo-knowledgebase
- * Description: 		Knowledgebase. By EJOweb.
- * Version: 			0.3
+ * Description: 		Knowledgebase, the EJOweb way.
+ * Version: 			0.3.1
  * Author: 				Erik Joling
  * Author URI: 			http://www.ejoweb.nl/
  *
@@ -11,185 +11,171 @@
  * GitHub Branch: 		overhaul
  */
 
+// Store directory path of this plugin
+define( 'EJO_KNOWLEDGEBASE_PLUGIN_DIR', trailingslashit( plugin_dir_path( __FILE__ ) ) );
+define( 'EJO_KNOWLEDGEBASE_PLUGIN_URL', trailingslashit( plugin_dir_url( __FILE__ ) ) );
+
+/* Load classes */
+include_once( EJO_KNOWLEDGEBASE_PLUGIN_DIR . 'includes/settings-class.php' );
+
+/* Knowledgebase */
+EJO_Knowledgebase::init();
+
+/* Settings */
+EJO_Knowledgebase_Settings::init();
+
+/**
+ *
+ */
 final class EJO_Knowledgebase 
 {
-	//* Holds the instance of this class.
-	protected static $_instance = null;
+	/* Version number of this plugin */
+	public static $version = '0.2';
 
-	//* Stores the version of this plugin.
-	public static $version;
+	/* Holds the instance of this class. */
+	private static $_instance = null;
 
-	//* Stores the id of this plugin.
-	public static $id = 'ejo-knowledgebase';
+	/* Store post type */
+	public static $post_type = 'knowledgebase_article';
 
-	//* Stores the name of the post-type
-	public static $post_type = 'knowledgebase';
+	/* Post type plural name */
+	public static $post_type_plural = 'knowledgebase_articles';
 
-	//* Stores the directory path for this plugin.
+	/* Post type archive */
+	public static $post_type_archive = 'knowledgebase';
+
+	/* Stores the directory path for this plugin. */
 	public static $dir;
 
-	//* Stores the directory URI for this plugin.
+	/* Stores the directory URI for this plugin. */
 	public static $uri;
 
-    //* Returns the instance.
-    public static function instance() 
+	/* Plugin setup. */
+	protected function __construct() 
+	{
+		/* Load Helper Functions */
+        add_action( 'plugins_loaded', array( $this, 'helper_functions' ), 1 );
+
+		/* Add Theme Features */
+        add_action( 'after_setup_theme', array( $this, 'theme_features' ) );
+
+		/* Register Post Type */
+		add_action( 'init', array( $this, 'register_knowledgebase_post_type' ) );
+	}
+
+    /* Add helper functions */
+    public function helper_functions() 
     {
-        if ( !self::$_instance )
-            self::$_instance = new self;
-        return self::$_instance;
+        /* Use this function to filter custom theme support with arguments */
+        include_once( EJO_KNOWLEDGEBASE_PLUGIN_DIR . 'includes/theme-support-arguments.php' );
     }
 
-	//* Plugin setup.
-	private function __construct() 
-	{
-		//* Set the properties needed by the plugin.
-		self::setup();
 
-		// Include required files
-        self::includes();
-
-		//* Register Knowledgebase post type
-		add_action( 'init', array( $this, 'register_knowledgebase_post_type' ) );
-
-		//* Register Columns
-		add_filter( 'manage_'.self::$post_type.'_posts_columns', array( $this, 'manage_columns' ) );
-		add_action( 'manage_'.self::$post_type.'_posts_custom_column', array( $this, 'manage_columns_output' ), 10, 2 );
-
-		//* Register Knowledgebase widget
-		add_action( 'widgets_init', array( $this, 'register_knowledgebase_widget' ) );
+    /* Add Features */
+    public function theme_features() 
+    {	
+		/* Allow arguments to be passed for theme-support */
+		add_filter( 'current_theme_supports-ejo-knowledgebase', 'ejo_theme_support_arguments', 10, 3 );
 	}
 
-	//* Defines the directory path and URI for the plugin.
-	public function setup() 
+	/* Register Post Type */
+	public function register_knowledgebase_post_type() 
 	{
-		// Store directory path and url of this plugin
-		self::$dir = trailingslashit( plugin_dir_path( __FILE__ ) );
-		self::$uri = trailingslashit( plugin_dir_url(  __FILE__ ) );
+		/* Get knowledgebase settings */
+		$knowledgebase_settings = get_option( 'knowledgebase_settings', array() );
 
-		//* Set version based on metadata at top of this file
-		$plugin_data = get_file_data( __FILE__, array('Version' => 'Version') );
-		self::$version = $plugin_data['Version'];
-	}
+		/* Archive title */
+		$title = (isset($knowledgebase_settings['title'])) ? $knowledgebase_settings['title'] : self::$post_type_archive;
 
-	//* Includes
-    private static function includes() 
-    {
-		include_once( self::$dir . 'inc/helpers.php' );
-		include_once( self::$dir . 'inc/class-widget.php' );
-	}
+		/* Archive description */
+		$description = (isset($knowledgebase_settings['description'])) ? $knowledgebase_settings['description'] : '';
 
-	//*
-	public function register_knowledgebase_post_type()
-	{
-		register_post_type( self::$post_type, array(
-			'description'           => 'Kennisbank',
-			'labels'                => array(
-				'name'                  => 'Kennisbank',
-				'singular_name'         => 'Artikel',
-				'add_new'               => 'Nieuw artikel',  
-				'add_new_item'          => 'Nieuw artikel toevoegen',  
-				'edit_item'             => 'Wijzig artikel',  
-				'new_item'              => 'Nieuw artikel',  
-				'view_item'             => 'Bekijk artikel',  
-				'search_items'          => 'Zoek artikelen',  
-				'not_found'             => 'Geen artikel gevonden',  
-				'not_found_in_trash'    => 'Geen artikel gevonden in Prullenbank',
-				'all_items'             => 'Alle artikelen',
-			),
-			'public'                => true,
-			'menu_position'         => 24,
-			'rewrite'               => array(
-				'slug'       => 'kennisbank',
-				'with_front' => false,
-			),
-			'supports'              => array('title','editor','author'),
-			'public'                => true,
-			'show_ui'               => true,
-			'publicly_queryable'    => true,
-			'has_archive'           => true,
-			'exclude_from_search'   => false
-		));
+		/* Archive slug */
+		$archive_slug = (isset($knowledgebase_settings['archive-slug'])) ? $knowledgebase_settings['archive-slug'] : self::$post_type_archive;
 
-		register_taxonomy( 'knowledgebase_category',array( 'knowledgebase' ),array( 
-			'hierarchical'  => false,
-			'labels'        => array(
-				'name'              =>  'Categorieën',
-				'singular_name'     =>  'Categorie',
-				'search_items'      =>  'Zoek categorieën',
-				'all_items'         =>  'Alle categorieën',
-				'parent_item'       =>  'Hoofd categorie',
-				'parent_item_colon' =>  'Hoofd categorie:',
-				'edit_item'         =>  'Wijzig categorie',
-				'update_item'       =>  'Update categorie',
-				'add_new_item'      =>  'Nieuwe categorie toevoegen',
-				'new_item_name'     =>  'Nieuwe categorie naam',
-				'popular_items'     => NULL,
-				'menu_name'         =>  'Categorieën' 
-			),
-			'show_ui'       => true,
-			'public'        => true,
-			'query_var'     => true,
-			'hierarchical'  => true,
-			'rewrite'       => array( 
-				'slug' => 'kennisbank-categorie',
+		/* Category archive slug */
+		$category_archive_slug = 'kennisbank-categorie';
+
+		/* Register the Knowledgebase Article post type. */
+		register_post_type(
+			self::$post_type,
+			array(
+				'description'         => $description,
+				'menu_position'       => 24,
+				'menu_icon'           => 'dashicons-archive',
+				'public'              => true,
+				'has_archive'         => $archive_slug,
+
+				/* The rewrite handles the URL structure. */
+				'rewrite' => array(
+					'slug'       => $archive_slug,
+					'with_front' => false,
+				),
+
+				/* What features the post type supports. */
+				'supports' => array(
+					'title',
+					'editor',
+					'excerpt',
+					'author',
+					'thumbnail',
+					'custom-header'
+				),
+
+				/* Labels used when displaying the posts. */
+				'labels' => array(
+					'name'               => $title,
+					'singular_name'      => __( 'Article',                    'ejo-knowledgebase' ),
+					'menu_name'          => __( 'Knowledgebase',              'ejo-knowledgebase' ),
+					'name_admin_bar'     => __( 'Knowledgebase Article',      'ejo-knowledgebase' ),
+					'add_new'            => __( 'Add New',                    'ejo-knowledgebase' ),
+					'add_new_item'       => __( 'Add New Article',            'ejo-knowledgebase' ),
+					'edit_item'          => __( 'Edit Article',               'ejo-knowledgebase' ),
+					'new_item'           => __( 'New Article',                'ejo-knowledgebase' ),
+					'view_item'          => __( 'View Article',               'ejo-knowledgebase' ),
+					'search_items'       => __( 'Search Articles',            'ejo-knowledgebase' ),
+					'not_found'          => __( 'No articles found',          'ejo-knowledgebase' ),
+					'not_found_in_trash' => __( 'No articles found in trash', 'ejo-knowledgebase' ),
+					'all_items'          => __( 'Articles',                   'ejo-knowledgebase' ),
+				)
 			)
-		));
+		);
+
+		/* Register Category Taxonomy */
+		register_taxonomy( 
+			'knowledgebase_category', 
+			array( self::$post_type ),
+			array( 
+				'hierarchical'  => true,
+				'rewrite'       => array( 
+					'slug'       => $category_archive_slug,
+					'with_front' => false,
+				),
+
+				'labels'        => array(
+					'name'              => __( 'Category',               'ejo-knowledgebase' ),
+					'singular_name'     => __( 'Knowledgebase Category', 'ejo-knowledgebase' ),
+					'menu_name'         => __( 'Knowledgebase Category', 'ejo-knowledgebase' ),
+					'search_items'      => __( 'Search Categories',      'ejo-knowledgebase' ),
+					'all_items'         => __( 'Categories',             'ejo-knowledgebase' ),
+					'parent_item'       => __( 'Parent Category',        'ejo-knowledgebase' ),
+					'parent_item_colon' => __( 'Parent Category:',       'ejo-knowledgebase' ),
+					'edit_item'         => __( 'Edit Category',          'ejo-knowledgebase' ),
+					'update_item'       => __( 'Update Category',        'ejo-knowledgebase' ),
+					'add_new_item'      => __( 'Add New Category',       'ejo-knowledgebase' ),
+					'new_item_name'     => __( 'New Category ',          'ejo-knowledgebase' ),
+					'popular_items'     => __( 'Popular Categories',     'ejo-knowledgebase' ),
+					'not_found'			=> __( 'Category not found', 	 'ejo-knowledgebase' )
+				),
+			)
+		);
 	}
 
-
-
-	//* 
-	public function manage_columns( $columns ) 
+	/* Returns the instance. */
+	public static function init() 
 	{
-		$columns = array_insert_after('title', $columns, 'categories', 'Categorieën' );
-				
-		return $columns;
-	}
-
-	public function manage_columns_output( $column, $post_id ) 
-	{
-		wp_die('test');
-		write_log('test');
-		if ( $column == 'categories' ) {
-
-			/* Get the genres for the post. */
-			$terms = get_the_terms( $post_id, 'knowledgebase_category' );
-
-			// /* If terms were found. */
-			// if ( !empty( $terms ) ) {
-
-			// 	$out = array();
-
-			// 	/* Loop through each term, linking to the 'edit posts' page for the specific term. */
-			// 	foreach ( $terms as $term ) {
-			// 		$out[] = sprintf( '<a href="%s">%s</a>',
-			// 			esc_url( add_query_arg( array( 'post_type' => $post->post_type, 'knowledgebase_category' => $term->slug ), 'edit.php' ) ),
-			// 			esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, 'knowledgebase_category', 'display' ) )
-			// 		);
-			// 	}
-
-			// 	/* Join the terms, separating them with a comma. */
-			// 	echo join( ', ', $out );
-			// }
-
-			/* If no terms were found, output a default message. */
-			// else {
-				echo 'test';
-			// }
-		}
-	}
-
-	//*
-	public function register_knowledgebase_widget()
-	{
-		register_widget( 'EJO_Knowledgebase_Widget' ); 
-	}
-
-	//* Multiple functionalities
-	public function main()
-	{
-
+		if ( !self::$_instance )
+			self::$_instance = new self;
+		return self::$_instance;
 	}
 }
-
-EJO_Knowledgebase::instance();
